@@ -1,0 +1,7 @@
+<use name="FWCore/Framework"/>
+<use name="SUEPTree/Objects"/>
+<use name="SUEPProd/Producer"/>
+<use name="root"/>
+<library file="*.cc" name="SUEPProdProducerPlugins">
+   <flags EDM_PLUGIN="1"/>
+</library>

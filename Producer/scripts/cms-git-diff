@@ -1,0 +1,55 @@
+#!/bin/bash
+
+if ! [ $CMSSW_BASE ]
+then
+  echo "Do cmsenv first"
+  exit 1
+fi
+
+if ! [ -d $CMSSW_BASE/src/.git ]
+then
+  echo "Do git cms-init first"
+  exit 1
+fi
+
+CD=$(pwd)
+cd $CMSSW_BASE/src
+
+# REMOTE: github user/organization account
+REMOTE=$1
+# BRANCH: branch
+BRANCH=$2
+
+# MASTER is the default branch for this release - comes at the top of branch list (yes I know this is not a reliable solution)
+MASTER=$(git branch | head -n 1 | sed 's/^[* ] \([^ ]*\)/\1/')
+
+if ! git remote | grep -q $REMOTE
+then
+  # Check the repo out
+  git remote add $REMOTE https://github.com/$REMOTE/cmssw.git
+fi
+
+git fetch $REMOTE
+
+if git branch | grep -q $BRANCH
+then
+  git checkout $BRANCH
+else
+  git checkout -t $REMOTE/$BRANCH
+fi
+
+# Find the first deviation from the master branch
+FIRSTDEV=$(git rev-list --first-parent $BRANCH ^$MASTER | tail -n1)
+if ! [ $FIRSTDEV ]
+then
+  echo "Branch $BRANCH of $REMOTE seems to have been merged to $MASTER already."
+  exit 0
+fi
+
+# The last commit in the master branch before the deviation
+LAST=$(git rev-list --first-parent $FIRSTDEV -n 2 | tail -n1)
+
+echo "Files changed:"
+git diff --name-only ${LAST}..${BRANCH}
+
+cd $CD

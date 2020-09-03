@@ -1,0 +1,15 @@
+<use name="FWCore/Framework"/>
+<use name="FWCore/ParameterSet"/>
+<use name="FWCore/MessageLogger"/>
+<use name="FWCore/Utilities"/>
+<use name="PhysicsTools/PatUtils"/>
+<use name="DataFormats/PatCandidates"/>
+<use name="DataFormats/Common"/>
+<use name="DataFormats/Math"/>
+<use name="JetMETCorrections/Objects"/>
+<use name="CondFormats/JetMETObjects"/>
+<use   name="SimGeneral/HepPDTRecord"/>
+<use name="SUEPProd/Utilities"/>
+<library file="*.cc" name="SUEPProdAuxiliaryPlugins">
+   <flags EDM_PLUGIN="1"/>
+</library>

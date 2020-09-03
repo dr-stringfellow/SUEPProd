@@ -1,0 +1,72 @@
+#!/bin/bash
+
+recursive-mv() {
+  # mv fails if the top directory exists already
+  # go recursively into subdirectories to complete the move
+
+  local SRC=$1
+  local TARG=$2
+  shift 2
+  EXCLUDES="$@"
+
+  for F in $(ls $SRC)
+  do
+    SKIP=false
+    for EXC in $EXCLUDES
+    do
+      echo $SRC/$F "./$EXC"
+      if [ $SRC/$F = "./$EXC" ]
+      then
+        SKIP=true
+        break
+      fi
+    done
+
+    $SKIP && continue
+
+    mv $SRC/$F $TARG/ 2>/dev/null || recursive-mv $SRC/$F $TARG/$F $EXCLUDES
+  done
+}
+
+CWD=$(pwd)
+TEMP=$(mktemp -d)
+
+ACCOUNT=$1
+REF=$2
+shift 2
+
+PKGS=
+EXCLUDES=
+while [ $# -gt 0 ]
+do
+  if [ $1 = '-x' ]
+  then
+    # everything after -x is considered as exclusion list
+    shift
+    EXCLUDES=$1
+    shift
+    continue
+  fi
+
+  if [ "$EXCLUDES" ]
+  then
+    EXCLUDES="$EXCLUDES $1"
+  else
+    PKGS="$PKGS $1"
+  fi
+  shift
+done
+
+# Thought about reusing the temporary directory and the cloned repository
+# However it turns out this is faster
+cd $TEMP
+git clone --depth 1 -n -b $REF https://github.com/$ACCOUNT/cmssw.git
+cd cmssw
+
+git checkout HEAD -- $PKGS
+
+recursive-mv . $CMSSW_BASE/src $EXCLUDES
+
+cd $CWD
+
+rm -rf $TEMP
